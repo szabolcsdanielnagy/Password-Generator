@@ -5,55 +5,56 @@ import java.util.ArrayList;
 
 public class PasswordGenerator {
 
-    private final String LOWER = "abcdefghijklmnopqrstuvwxyz";
-    private final String UPPER = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    private final String NUMERIC = "0123456789";
-    private final String SYMBOLS = "!@#$%^&*_=+-/";
-    private SecureRandom random;
+    private final SecureRandom random;
     private boolean useLower;
     private boolean useUpper;
     private boolean useNumeric;
     private boolean useSymbols;
-    private ArrayList<String> usages;
+    private ArrayList<String> selectedCharacterPackages;
 
     public PasswordGenerator() {
         random = new SecureRandom();
-        usages = new ArrayList<>();
+        selectedCharacterPackages = new ArrayList<>();
         useLower = false;
         useUpper = false;
         useNumeric = false;
         useSymbols = false;
     }
 
-    public String generatePassword(int length, boolean useLower, boolean useUpper,
-                                   boolean useSymbols, boolean useNumeric) {
+    public String generatePassword(int length, boolean useLower,
+                                   boolean useUpper, boolean useSymbols,
+                                   boolean useNumeric) {
         this.useLower = useLower;
         this.useUpper = useUpper;
         this.useSymbols = useSymbols;
         this.useNumeric = useNumeric;
-        setUpUsages();
+        setUpSelectedCharacterPackages();
         StringBuilder password = new StringBuilder();
         for (int i = 0; i < length; i++) {
-            String charCategory = usages.get(random.nextInt(usages.size()));
+            String charCategory = selectedCharacterPackages.get(random.nextInt(selectedCharacterPackages.size()));
             int position = random.nextInt(charCategory.length());
             password.append(charCategory.charAt(position));
         }
-        usages = new ArrayList<>();
+        selectedCharacterPackages = new ArrayList<>();
         return password.toString();
     }
 
-    public void setUpUsages() {
+    public void setUpSelectedCharacterPackages() {
         if (useLower) {
-            usages.add(LOWER);
+            String LOWER = "abcdefghijklmnopqrstuvwxyz";
+            selectedCharacterPackages.add(LOWER);
         }
         if (useNumeric) {
-            usages.add(NUMERIC);
+            String NUMERIC = "0123456789";
+            selectedCharacterPackages.add(NUMERIC);
         }
         if (useSymbols) {
-            usages.add(SYMBOLS);
+            String SYMBOLS = "!@#$%^&*_=+-/";
+            selectedCharacterPackages.add(SYMBOLS);
         }
         if (useUpper) {
-            usages.add(UPPER);
+            String UPPER = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+            selectedCharacterPackages.add(UPPER);
         }
     }
 }

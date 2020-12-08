@@ -2,54 +2,61 @@ package com.company;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
-public class GUI implements ActionListener {
+public class GUI {
     private final JFrame frame;
     private final JTabbedPane tabbedPane;
     private final JPanel passwordGeneratorTab, generatedPasswordsTab;
-    private final JButton generateButton;
+    private final JButton generateButton, copyToClipBoardButton;
     private final JLabel preferencesLabel;
     private final JCheckBox useLower, useUpper, useSymbols, useNumeric;
     private final JSlider passwordLength;
     private final PasswordGenerator passwordGenerator;
+    private final JTextArea passwordField;
 
     public GUI() {
-        tabbedPane = new JTabbedPane();
+        passwordField = new JTextArea();
+        passwordGenerator = new PasswordGenerator();
         preferencesLabel = new JLabel("Preferences");
         generateButton = new JButton("Generate password");
-        passwordLength = new JSlider(1, 25);
-        setUpButton();
+        copyToClipBoardButton = new JButton("Copy to clipboard");
+        setUpButtons();
         passwordGeneratorTab = new JPanel();
-        generatedPasswordsTab = new JPanel();
         setUpPasswordGeneratorTab();
+        generatedPasswordsTab = new JPanel();
         setUpGeneratedPasswordsTab();
+        tabbedPane = new JTabbedPane();
+        setUpTabbedPane();
+        passwordLength = new JSlider(1, 25);
+        setUpSlider();
         frame = new JFrame();
         setUpFrame();
         useLower = new JCheckBox("Lower case");
         useUpper = new JCheckBox("Upper case");
-        useSymbols = new JCheckBox("Contain symbols");
-        useNumeric = new JCheckBox("Contain numeric");
+        useSymbols = new JCheckBox("Symbols");
+        useNumeric = new JCheckBox("Numeric");
         addCheckBoxes();
-        setUpSlider();
-        passwordGenerator = new PasswordGenerator();
-        setUpTabbedPane();
     }
 
-    private void setUpButton() {
-        generateButton.addActionListener(this);
+    private void setUpButtons() {
+        generateButton.addActionListener(this::generateButtonPressed);
+        copyToClipBoardButton.addActionListener(this::copyToClipBoardButtonPressed);
     }
 
     private void setUpTabbedPane() {
-        tabbedPane.addTab("Password generator", passwordGeneratorTab);
+        tabbedPane.addTab("Generate a password", passwordGeneratorTab);
         tabbedPane.addTab("Generated passwords", generatedPasswordsTab);
     }
 
     private void setUpPasswordGeneratorTab() {
+        passwordGeneratorTab.add(passwordField);
         passwordGeneratorTab.setBorder(BorderFactory.createEmptyBorder(30, 30, 10, 30));
         passwordGeneratorTab.setLayout(new GridLayout(0, 1));
         passwordGeneratorTab.add(generateButton);
+        passwordGeneratorTab.add(copyToClipBoardButton);
         passwordGeneratorTab.add(preferencesLabel);
     }
 
@@ -87,9 +94,37 @@ public class GUI implements ActionListener {
         passwordGeneratorTab.add(speedPanel, BorderLayout.NORTH);
     }
 
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        String password = passwordGenerator.generatePassword(passwordLength.getValue(), useLower.isSelected(), useUpper.isSelected(), useSymbols.isSelected(), useNumeric.isSelected());
-        JOptionPane.showMessageDialog(frame,password,"Generated password", JOptionPane.INFORMATION_MESSAGE);
+    public void generateButtonPressed(ActionEvent e) {
+        if (isValid()) {
+            String password = passwordGenerator.generatePassword(passwordLength.getValue(),
+                    useLower.isSelected(), useUpper.isSelected(),
+                    useSymbols.isSelected(), useNumeric.isSelected());
+            passwordField.setText(password);
+        } else {
+            JOptionPane.showMessageDialog(frame, "No options have been selected.", "Error", JOptionPane.INFORMATION_MESSAGE);
+        }
+    }
+
+    public void copyToClipBoardButtonPressed(ActionEvent e) {
+        StringSelection stringSelection = new StringSelection(passwordField.getText());
+        Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+        clipboard.setContents(stringSelection, null);
+    }
+
+    public boolean isValid() {
+        int selectedCount = 0;
+        if (useLower.isSelected()) {
+            selectedCount++;
+        }
+        if (useUpper.isSelected()) {
+            selectedCount++;
+        }
+        if (useSymbols.isSelected()) {
+            selectedCount++;
+        }
+        if (useNumeric.isSelected()) {
+            selectedCount++;
+        }
+        return selectedCount != 0;
     }
 }
